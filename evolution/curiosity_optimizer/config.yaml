@@ -1,0 +1,118 @@
+# ============================================================
+# OpenEvolve Configuration: Curiosity & Exploration Optimizer
+# ============================================================
+
+# ------------------------------------------------------------
+# 1. GENERAL SETTINGS
+# ------------------------------------------------------------
+max_iterations: 50
+checkpoint_interval: 5
+log_level: "INFO"
+random_seed: 42
+
+# ------------------------------------------------------------
+# 2. EVOLUTION SETTINGS
+# ------------------------------------------------------------
+# Full rewrite ensures complete class integrity and novel architectures
+diff_based_evolution: true
+max_code_length: 25000
+
+# ------------------------------------------------------------
+# 3. EARLY STOPPING SETTINGS
+# ------------------------------------------------------------
+early_stopping_patience: null  # RL exploration breakthroughs can happen late
+convergence_threshold: 0.0001
+early_stopping_metric: "combined_score"
+
+# ------------------------------------------------------------
+# 4. LLM CONFIGURATION
+# ------------------------------------------------------------
+llm:
+  # The engine supports OpenRouter, Gemini, OpenAI, Nvidia NIM, or Local Ollama
+  api_base: "https://momen-gpu.tail374b2b.ts.net/v1"
+  api_key: sk-9405ffec0936cb65-aad0ee-60614205
+
+  primary_model: "antigravity/gemini-3.6-flash-high"
+
+  models:
+    - name: "antigravity/gemini-3.6-flash-high"
+      weight: 1.0
+
+  temperature: 0.7
+  top_p: 0.95
+  max_tokens: 4096
+  timeout: 120
+  retries: 3
+  retry_delay: 5
+
+# ------------------------------------------------------------
+# 5. PROMPT CONFIGURATION
+# ------------------------------------------------------------
+prompt:
+  system_message: |
+    You are an elite Reinforcement Learning researcher and algorithmic architect specializing in intrinsic motivation, curiosity formulations, and active state-space exploration.
+    
+    Your task is to evolve and optimize the Python program `initial_program.py` which defines `CuriosityRewardModule` and `create_curiosity_module(state_dim: int, action_dim: int)`.
+    
+    The module is evaluated against 4 core pillars:
+    1. State-Space Coverage (30%): Deep, unguided exploration in sparse-reward environments (8x8 maze).
+    2. Habituation Decay (25%): Intrinsic boredom — reward on familiar, repeatedly visited states must decay rapidly toward 0.
+    3. Noisy-TV Immunity (25%): Stochastic noise rejection — pure white noise transitions must NOT trap the agent; structured learnable novel states must be strongly preferred.
+    4. Goal Reach Rate (20%): Solving sparse-reward navigation tasks (15-step chain) when combined with DQN.
+
+    Key algorithmic techniques you can explore and combine:
+    - Feature representation: Inverse dynamics features (phi(s) that only predict action a, naturally filtering ambient noise), contrastive representations, or non-linear projections.
+    - Epistemic uncertainty & ensemble disagreement: Measuring variance or variance-of-predictions across multiple lightweight heads.
+    - Adaptive habituation: Kernel density estimators, learned hash embeddings, or frequency counters with exponential/polynomial decay.
+    - Information Gain / Prediction error normalization: Running variance tracking (Welford's algorithm) to prevent reward explosion.
+    
+    Contract Requirements:
+    - Must define class `CuriosityRewardModule` with methods:
+        `__init__(self, state_dim: int, action_dim: int, seed: int = 42)`
+        `compute_intrinsic_reward(self, state: np.ndarray, action: int, next_state: np.ndarray) -> float` (returns non-negative float bonus)
+        `update(self, states: np.ndarray, actions: np.ndarray, next_states: np.ndarray) -> dict`
+        `reset(self) -> None`
+    - Must define factory function:
+        `create_curiosity_module(state_dim: int, action_dim: int) -> CuriosityRewardModule`
+    - Pure NumPy or lightweight PyTorch operations only. Must execute efficiently.
+
+  num_top_programs: 3
+  num_diverse_programs: 2
+  use_template_stochasticity: true
+  include_artifacts: true
+  max_artifact_bytes: 20480
+
+# ------------------------------------------------------------
+# 6. DATABASE CONFIGURATION (MAP-Elites)
+# ------------------------------------------------------------
+database:
+  in_memory: true
+  log_prompts: true
+  population_size: 100
+  archive_size: 50
+  num_islands: 4
+  migration_interval: 15
+  migration_rate: 0.15
+
+  elite_selection_ratio: 0.1
+  exploration_ratio: 0.35
+  exploitation_ratio: 0.55
+
+  # MAP-Elites grid dimensions matching evaluator metrics
+  feature_dimensions:
+    - "state_coverage"
+    - "noisy_tv_immunity"
+  feature_bins: 10
+
+# ------------------------------------------------------------
+# 7. EVALUATOR CONFIGURATION
+# ------------------------------------------------------------
+evaluator:
+  timeout: 60
+  max_retries: 2
+  cascade_evaluation: false
+  cascade_thresholds:
+    - 0.35   # Stage 1 Habituation + Noisy-TV filter
+  parallel_evaluations: 2
+  use_llm_feedback: false
+  enable_artifacts: true

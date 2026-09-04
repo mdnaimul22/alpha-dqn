@@ -1,0 +1,17 @@
+{
+  "id": "a4719e5c-3251-4ad1-b029-9453fc23f255",
+  "generation": 5,
+  "iteration": 225,
+  "timestamp": 1788485840.1829963,
+  "parent_id": "2874f1e6-0551-4f6d-b2c1-29793f04cbe7",
+  "metrics": {
+    "combined_score": 0.6969532285200851,
+    "state_coverage": 0.25,
+    "noisy_tv_immunity": 0.9438602489968513,
+    "habituation_decay": 0.9999526650834892,
+    "goal_reach_rate": 0.68,
+    "execution_time": 0.21901525700013735
+  },
+  "language": "python",
+  "saved_at": 1788486013.0765476
+}

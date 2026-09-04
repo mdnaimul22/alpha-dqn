@@ -1,0 +1,113 @@
+# ============================================================
+# OpenEvolve Configuration: Adaptive Bellman Loss Optimizer
+# ============================================================
+
+# ------------------------------------------------------------
+# 1. GENERAL SETTINGS
+# ------------------------------------------------------------
+max_iterations: 50
+checkpoint_interval: 5
+log_level: "INFO"
+random_seed: 42
+
+# ------------------------------------------------------------
+# 2. EVOLUTION SETTINGS
+# ------------------------------------------------------------
+diff_based_evolution: true
+max_code_length: 25000
+
+# ------------------------------------------------------------
+# 3. EARLY STOPPING SETTINGS
+# ------------------------------------------------------------
+early_stopping_patience: null
+convergence_threshold: 0.0001
+early_stopping_metric: "combined_score"
+
+# ------------------------------------------------------------
+# 4. LLM CONFIGURATION
+# ------------------------------------------------------------
+llm:
+  api_base: "https://momen-gpu.tail374b2b.ts.net/v1"
+  api_key: sk-9405ffec0936cb65-aad0ee-60614205
+
+  primary_model: "antigravity/gemini-3.6-flash-high"
+
+  models:
+    - name: "antigravity/gemini-3.6-flash-high"
+      weight: 1.0
+
+  temperature: 0.7
+  top_p: 0.95
+  max_tokens: 4096
+  timeout: 120
+  retries: 3
+  retry_delay: 5
+
+# ------------------------------------------------------------
+# 5. PROMPT CONFIGURATION
+# ------------------------------------------------------------
+prompt:
+  system_message: |
+    You are an elite Reinforcement Learning researcher specializing in loss function design, Bellman error dynamics, robust optimization, and deep Q-learning stability.
+    
+    Your task is to evolve and optimize the Python program `initial_program.py` which defines `AdaptiveLossModule` and `create_loss_module(seed: int = 42)`.
+    
+    The module is evaluated against 4 core pillars:
+    1. Convergence Speed (30%): Fast, reliable regression of predicted Q-values onto Bellman targets across non-linear neural networks.
+    2. Gradient & Outlier Stability (25%): Immunity against sudden large TD spikes; gradient norms must remain strictly bounded without exploding or vanishing.
+    3. Asymmetric Optimism (25%): Balancing under-estimation versus over-estimation penalties to promote rapid discovery of optimal actions without runaway over-optimism.
+    4. Curvature Adaptability (20%): Dynamically adjusting loss curvature (e.g. adaptive Huber threshold beta, quantile scaling, or running error normalization) across widely differing error scales.
+
+    Key algorithmic techniques you can explore and combine:
+    - Dynamic Huber / Smooth L1 transitions: Scaling beta dynamically using robust statistics (median absolute deviation, running variance, or percentiles).
+    - Asymmetric / Expectile / Quantile weighting: Penalizing negative TD errors (underestimation) slightly differently from positive ones to drive faster Bellman contraction.
+    - Gradient-damped or Log-Cosh formulations: Naturally saturating extreme outliers while maintaining quadratic behavior near zero.
+    - Adaptive Importance Re-weighting: Self-weighting samples according to uncertainty or gradient signal-to-noise ratio.
+    
+    Contract Requirements:
+    - Must define class `AdaptiveLossModule` with methods:
+        `__init__(self, seed: int = 42)`
+        `compute_loss(self, current_q: torch.Tensor, target_q: torch.Tensor, weights: Optional[torch.Tensor] = None) -> torch.Tensor` (returns scalar differentiable PyTorch tensor)
+        `update_stats(self, td_errors: np.ndarray) -> dict`
+        `reset(self) -> None`
+    - Must define factory function:
+        `create_loss_module(seed: int = 42) -> AdaptiveLossModule`
+    - Must be purely differentiable PyTorch for backpropagation.
+
+  num_top_programs: 3
+  num_diverse_programs: 2
+  use_template_stochasticity: true
+  include_artifacts: true
+  max_artifact_bytes: 20480
+
+# ------------------------------------------------------------
+# 6. DATABASE CONFIGURATION (MAP-Elites)
+# ------------------------------------------------------------
+database:
+  in_memory: true
+  log_prompts: true
+  population_size: 100
+  archive_size: 50
+  num_islands: 4
+  migration_interval: 15
+  migration_rate: 0.15
+
+  elite_selection_ratio: 0.1
+  exploration_ratio: 0.35
+  exploitation_ratio: 0.55
+
+  feature_dimensions:
+    - "gradient_stability"
+    - "convergence_speed"
+  feature_bins: 10
+
+# ------------------------------------------------------------
+# 7. EVALUATOR CONFIGURATION
+# ------------------------------------------------------------
+evaluator:
+  timeout: 60
+  max_retries: 2
+  cascade_evaluation: false
+  parallel_evaluations: 2
+  use_llm_feedback: false
+  enable_artifacts: true

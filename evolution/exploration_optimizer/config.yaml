@@ -1,0 +1,115 @@
+# ============================================================
+# OpenEvolve Configuration: Novel Exploration Policy Optimizer
+# ============================================================
+
+# ------------------------------------------------------------
+# 1. GENERAL SETTINGS
+# ------------------------------------------------------------
+max_iterations: 50
+checkpoint_interval: 5
+log_level: "INFO"
+random_seed: 42
+
+# ------------------------------------------------------------
+# 2. EVOLUTION SETTINGS
+# ------------------------------------------------------------
+diff_based_evolution: true
+max_code_length: 25000
+
+# ------------------------------------------------------------
+# 3. EARLY STOPPING SETTINGS
+# ------------------------------------------------------------
+early_stopping_patience: null
+convergence_threshold: 0.0001
+early_stopping_metric: "combined_score"
+
+# ------------------------------------------------------------
+# 4. LLM CONFIGURATION
+# ------------------------------------------------------------
+llm:
+  api_base: "https://momen-gpu.tail374b2b.ts.net/v1"
+  api_key: sk-9405ffec0936cb65-aad0ee-60614205
+
+  primary_model: "antigravity/gemini-3.6-flash-high"
+
+  models:
+    - name: "antigravity/gemini-3.6-flash-high"
+      weight: 1.0
+
+  temperature: 0.7
+  top_p: 0.95
+  max_tokens: 4096
+  timeout: 120
+  retries: 3
+  retry_delay: 5
+
+# ------------------------------------------------------------
+# 5. PROMPT CONFIGURATION
+# ------------------------------------------------------------
+prompt:
+  system_message: |
+    You are an elite Reinforcement Learning researcher specializing in action selection mechanisms, directed exploration, epistemic uncertainty, NoisyNet formulations, and non-dithering policy design for Deep Q-Networks.
+    
+    Your task is to evolve and optimize the Python program `initial_program.py` which defines `ExplorationPolicyModule` and `create_exploration_module(state_dim: int, action_dim: int, seed: int = 42)`.
+    
+    The module is evaluated against 4 core pillars:
+    1. Deep Diffusion Speed (30%): Escaping bottlenecks and reaching deep distant horizons without wandering back and forth.
+    2. State Visitation Entropy (30%): Maximizing coverage uniformity across discrete grid topologies (high Shannon entropy).
+    3. Action Coherence & Anti-Dithering (20%): Maintaining temporally extended action commitment without getting trapped in infinite wall-bumping loops.
+    4. Exploitation Annihilation (20%): Precision in exploiting clear, confident optimal actions when Q-values have strong margins.
+
+    Key algorithmic techniques you can explore and combine:
+    - Noisy action perturbation & Parametric noise: Applying learned or state-dependent noise to Q-logits rather than uniform random actions.
+    - Thompson Sampling / Epistemic uncertainty: Sampling actions proportional to estimated value uncertainty.
+    - Directed Q-UCB: Augmenting Q-values with Upper Confidence Bound bonuses derived from state-action visitation counts or hashing.
+    - Temporally Extended Actions / Option-like persistence: Executing repeated directional commitments with sticky actions or momentum.
+    - Adaptive Temperature Annealing: Dynamic entropy regularization that cools down as states become familiar.
+    
+    Contract Requirements:
+    - Must define class `ExplorationPolicyModule` with methods:
+        `__init__(self, state_dim: int, action_dim: int, seed: int = 42)`
+        `select_action(self, q_values: np.ndarray, state: np.ndarray, step: int = 0, epsilon: float = 0.1) -> int` (returns integer action in [0, action_dim - 1])
+        `update(self, state: np.ndarray, action: int, reward: float, next_state: np.ndarray, done: bool) -> dict`
+        `reset_episode(self) -> None`
+        `reset(self) -> None`
+    - Must define factory function:
+        `create_exploration_module(state_dim: int, action_dim: int, seed: int = 42) -> ExplorationPolicyModule`
+    - Pure NumPy or lightweight operations for ultra-fast execution.
+
+  num_top_programs: 3
+  num_diverse_programs: 2
+  use_template_stochasticity: true
+  include_artifacts: true
+  max_artifact_bytes: 20480
+
+# ------------------------------------------------------------
+# 6. DATABASE CONFIGURATION (MAP-Elites)
+# ------------------------------------------------------------
+database:
+  in_memory: true
+  log_prompts: true
+  population_size: 100
+  archive_size: 50
+  num_islands: 4
+  migration_interval: 15
+  migration_rate: 0.15
+
+  elite_selection_ratio: 0.1
+  exploration_ratio: 0.35
+  exploitation_ratio: 0.55
+
+  feature_dimensions:
+    - "diffusion_speed"
+    - "state_entropy"
+  feature_bins: 10
+
+# ------------------------------------------------------------
+# 7. EVALUATOR CONFIGURATION
+# ------------------------------------------------------------
+evaluator:
+  timeout: 60
+  max_retries: 2
+  cascade_evaluation: false
+  parallel_evaluations: 2
+  use_llm_feedback: false
+  enable_artifacts: true
